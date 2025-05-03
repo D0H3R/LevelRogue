@@ -1,0 +1,5 @@
+displayName = LevelRogue
+author = D0H3R
+version = 1.0
+dependencies = CalamityMod,
+References = Calamitymod,
