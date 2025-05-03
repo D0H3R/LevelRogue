@@ -240,7 +240,12 @@ namespace LevelRogue.UI
             }
         }
 
-        private UIText CreateInfoText(string text, float top)
+        public static void RefreshWarriorStatDisplay()
+	{
+	    // Логика обновления интерфейса
+	}
+	
+ 	private UIText CreateInfoText(string text, float top)
         {
             var uiText = new UIText(text);
             uiText.Top.Set(top, 0f);
