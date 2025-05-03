@@ -314,94 +314,95 @@ namespace LevelRogue.UI
 				warriorSpeedText.SetText($"Скорость Атаки: {mp.spentMeleeSpeed}");
 		}
 
-	}	
+		
 		private UIPanel CreateRangedTab()
-	{
-	    var panel = new UIPanel();
-	    panel.Width.Set(500, 0f);
-	    panel.Height.Set(500, 0f);
-	    panel.Left.Set(180, 0f);
-	    panel.Top.Set(50, 0f);
-	    panel.SetPadding(10);
-	
-	    var title = new UIText("Прокачка для Стрелка", 0.9f);
-	    title.Top.Set(10, 0f);
-	    title.HAlign = 0.5f;
-	    panel.Append(title);
-	
-	    Player p = Main.LocalPlayer;
-	    LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
-	
-	    string[] statNames = { "Урон дальнего боя: ", "Шанс крита: ", "Скорость стрельбы: " };
-	
-	    for (int i = 0; i < statNames.Length; i++)
-	    {
-	        int index = i;
-	
-	        string initialValue = index switch
-	        {
-	            0 => mp.spentRangedDamage.ToString(),
-	            1 => mp.spentRangedCrit.ToString(),
-	            2 => mp.spentRangedSpeed.ToString(),
-	            _ => "0"
-	        };
-	
-	        var statText = new UIText($"{statNames[i]} {initialValue}", 0.8f);
-	        statText.Top.Set(350 + index * 40, 0f);
-	        statText.Left.Set(50, 0f);
-	        panel.Append(statText);
-	
-	        // Привязка текстовых объектов к переменным для обновления
-	        if (index == 0) rangedDamageText = statText;
-	        else if (index == 1) rangedCritText = statText;
-	        else if (index == 2) rangedSpeedText = statText;
-	
-	        var addButton = new UITextPanel<string>("+");
-	        addButton.Width.Set(40, 0f);
-	        addButton.Height.Set(30, 0f);
-	        addButton.Top.Set(345 + index * 40, 0f);
-	        addButton.Left.Set(300, 0f);
-	        panel.Append(addButton);
-	
-	        addButton.OnLeftClick += (evt, el) =>
-	        {
-	            if (mp.statPoints > 0)
-	            {
-	                switch (index)
-	                {
-	                    case 0: mp.spentRangedDamage++; break;
-	                    case 1: mp.spentRangedCrit++; break;
-	                    case 2: mp.spentRangedSpeed++; break;
-	                }
-	
-	                mp.statPoints--;
-	                skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
-	                RefreshRangedStatDisplay();
-	            }
-	            else
-	            {
-	                Main.NewText("Недостаточно очков навыков!");
-	            }
-	        };
-	    }
-	    return panel;
-	}
-	
-	private static UIText rangedDamageText;
-	private static UIText rangedCritText;
-	private static UIText rangedSpeedText;
-	
-	public static void RefreshRangedStatDisplay()
-	{
-	    Player p = Main.LocalPlayer;
-	    LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
-	
-	    if (rangedDamageText != null)
-	        rangedDamageText.SetText($"Урон дальнего боя: {mp.spentRangedDamage}");
-	    if (rangedCritText != null)
-	        rangedCritText.SetText($"Шанс крита: {mp.spentRangedCrit}");
-	    if (rangedSpeedText != null)
-	        rangedSpeedText.SetText($"Скорость стрельбы: {mp.spentRangedSpeed}");
+		{
+			var panel = new UIPanel();
+			panel.Width.Set(500, 0f);
+			panel.Height.Set(500, 0f);
+			panel.Left.Set(180, 0f);
+			panel.Top.Set(50, 0f);
+			panel.SetPadding(10);
+
+			var title = new UIText("Прокачка для Стрелка", 0.9f);
+			title.Top.Set(10, 0f);
+			title.HAlign = 0.5f;
+			panel.Append(title);
+
+			Player p = Main.LocalPlayer;
+			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
+
+			string[] statNames = { "Урон дальнего боя: ", "Шанс крита: ", "Скорость стрельбы: " };
+
+			for (int i = 0; i < statNames.Length; i++)
+			{
+				int index = i;
+
+				string initialValue = index switch
+				{
+					0 => mp.spentRangedDamage.ToString(),
+					1 => mp.spentRangedCrit.ToString(),
+					2 => mp.spentRangedSpeed.ToString(),
+					_ => "0"
+				};
+
+				var statText = new UIText($"{statNames[i]} {initialValue}", 0.8f);
+				statText.Top.Set(350 + index * 40, 0f);
+				statText.Left.Set(50, 0f);
+				panel.Append(statText);
+
+				// Привязка текстовых объектов к переменным для обновления
+				if (index == 0) rangedDamageText = statText;
+				else if (index == 1) rangedCritText = statText;
+				else if (index == 2) rangedSpeedText = statText;
+
+				var addButton = new UITextPanel<string>("+");
+				addButton.Width.Set(40, 0f);
+				addButton.Height.Set(30, 0f);
+				addButton.Top.Set(345 + index * 40, 0f);
+				addButton.Left.Set(300, 0f);
+				panel.Append(addButton);
+
+				addButton.OnLeftClick += (evt, el) =>
+				{
+					if (mp.statPoints > 0)
+					{
+						switch (index)
+						{
+							case 0: mp.spentRangedDamage++; break;
+							case 1: mp.spentRangedCrit++; break;
+							case 2: mp.spentRangedSpeed++; break;
+						}
+
+						mp.statPoints--;
+						skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
+						RefreshRangedStatDisplay();
+					}
+					else
+					{
+						Main.NewText("Недостаточно очков навыков!");
+					}
+				};
+			}
+			return panel;
+		}
+
+		private static UIText rangedDamageText;
+		private static UIText rangedCritText;
+		private static UIText rangedSpeedText;
+
+		public static void RefreshRangedStatDisplay()
+		{
+			Player p = Main.LocalPlayer;
+			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
+
+			if (rangedDamageText != null)
+				rangedDamageText.SetText($"Урон дальнего боя: {mp.spentRangedDamage}");
+			if (rangedCritText != null)
+				rangedCritText.SetText($"Шанс крита: {mp.spentRangedCrit}");
+			if (rangedSpeedText != null)
+				rangedSpeedText.SetText($"Скорость стрельбы: {mp.spentRangedSpeed}");
+		}
+		
 	}
 }
-
