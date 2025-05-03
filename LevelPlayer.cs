@@ -32,10 +32,10 @@ namespace LevelRogue
 		public int spentRangedCrit;
 		public int spentRangedSpeed;
 
-		 // Бонусы для Стрелка
-		public int RangedDamageBonus = 0;
-		public int bonusRangedCrit = 0;
-		public float bonusRangedSpeed = 0f;
+		// Бонусы для Стрелка
+		public int rangedDamageBonus = 0; // Урон в процентах
+		public int bonusRangedCrit = 0;   // Шанс крита
+		public float bonusRangedSpeed = 0f; // Скорость стрельбы
 		
         public int magicDamageBonus = 0;
 		public int bonusMagicCrit = 0;
@@ -151,6 +151,19 @@ namespace LevelRogue
 			Player.GetDamage(DamageClass.Melee) += meleeDamageBonus;
 			Player.GetCritChance(DamageClass.Melee) += meleeCritBonus;
 			Player.GetAttackSpeed(DamageClass.Melee) += meleeSpeedBonus;
+			
+			float rangedDamageBonus = 0f;
+			int rangedCritBonus = 0;
+			float rangedSpeedBonus = 0f;
+			
+			// Применение бонусов для Стрелка
+			float rangedDamageBonus = spentRangedDamage * 0.01f;
+			int rangedCritBonus = spentRangedCrit;
+			float rangedSpeedBonus = spentRangedSpeed * 0.01f;
+
+			Player.GetDamage(DamageClass.Ranged) += rangedDamageBonus;
+			Player.GetCritChance(DamageClass.Ranged) += rangedCritBonus;
+			Player.GetAttackSpeed(DamageClass.Ranged) += rangedSpeedBonus;
 		}
 
 
@@ -271,8 +284,6 @@ namespace LevelRogue
 			bonusMeleeCrit = 0;
 			bonusMeleeSpeed = 0f;
 			bonusEndurance = 0f;
-			rangedDamageBonus = 0;
-			bonusRangedCrit = 0;
 			magicDamageBonus = 0;
 			bonusMagicCrit = 0;
 			summonDamageBonus = 0;
@@ -281,6 +292,16 @@ namespace LevelRogue
 			regenBonus = 0;
 			bonusLuck = 0f;
 			bonusAggro = 0;
+			
+			// Сбрасываем бонусы для Стрелка
+			rangedDamageBonus = 0;
+			bonusRangedCrit = 0;
+			bonusRangedSpeed = 0f;
+
+			// Сбрасываем затраченные очки
+			spentRangedDamage = 0;
+			spentRangedCrit = 0;
+			spentRangedSpeed = 0;
 
 			// Пересчитываем очки навыков по уровню
 			statPoints = level * 2 + bonusStatPoints;
