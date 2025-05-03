@@ -247,30 +247,37 @@ namespace LevelRogue
             return 500 + 50 * level * level - 50; // Формула для опыта
         }
 
-        public void ResetStats()
-		{
-			// Обнуляем потраченные очки
-
-
-			// Обнуляем бонусы
-			MeleeDamageBonus = 0;
-			bonusMeleeCrit = 0;
-			bonusMeleeSpeed = 0f;
-			bonusEndurance = 0f;
-			rangedDamageBonus = 0;
-			bonusRangedCrit = 0;
-			magicDamageBonus = 0;
-			bonusMagicCrit = 0;
-			summonDamageBonus = 0;
-			bonusSummonKnockback = 0f;
-			bonusHP = 0;
-			regenBonus = 0;
-			bonusLuck = 0f;
-			bonusAggro = 0;
-
-			// Пересчитываем очки заново по уровню
-			statPoints = level * 2 + bonusStatPoints;
-		}
+	public void ResetStats()
+	{
+	    // Сбрасываем затраченные очки
+	    spentMelee = 0;
+	    spentMeleeCrit = 0;
+	    spentMeleeSpeed = 0;
+	    spentRanged = 0;
+	    spentMagic = 0;
+	    spentSummon = 0;
+	    spentRogue = 0;
+	    spentPlayer = 0;
+	
+	    // Сбрасываем бонусы
+	    MeleeDamageBonus = 0;
+	    bonusMeleeCrit = 0;
+	    bonusMeleeSpeed = 0f;
+	    bonusEndurance = 0f;
+	    rangedDamageBonus = 0;
+	    bonusRangedCrit = 0;
+	    magicDamageBonus = 0;
+	    bonusMagicCrit = 0;
+	    summonDamageBonus = 0;
+	    bonusSummonKnockback = 0f;
+	    bonusHP = 0;
+	    regenBonus = 0;
+	    bonusLuck = 0f;
+	    bonusAggro = 0;
+	
+	    // Пересчитываем очки навыков по уровню
+	    statPoints = level * 2 + bonusStatPoints;
+	}
 
 
         public void ResetStat(string statName)
