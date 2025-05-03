@@ -43,9 +43,11 @@ namespace LevelRogue.Items
 
             Main.NewText("Очки характеристик сброшены! Можно перераспределить их заново.", 255, 240, 20);
 
-            // Здесь вызываем обновление интерфейса
+            modPlayer.ResetStats(); // Сбросить характеристики
 
-			modPlayer.ResetStats(); // Сбросить характеристики
+            // Добавлено обновление интерфейса
+            LevelRogueUI.RefreshWarriorStatDisplay();
+
             return true;
         }
     }
