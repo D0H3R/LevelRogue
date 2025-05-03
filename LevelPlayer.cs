@@ -27,8 +27,15 @@ namespace LevelRogue
 		public float bonusMeleeSpeed = 0f;
 		public float bonusEndurance = 0f;
 		
-        public int rangedDamageBonus = 0;
-		public int bonusRangedCrit = 0;
+	// Переменные для Стрелка
+	public int spentRangedDamage;
+	public int spentRangedCrit;
+	public int spentRangedSpeed;
+
+	 // Бонусы для Стрелка
+	public int RangedDamageBonus = 0;
+	public int bonusRangedCrit = 0;
+	public float bonusRangedSpeed = 0f;
 		
         public int magicDamageBonus = 0;
 		public int bonusMagicCrit = 0;
