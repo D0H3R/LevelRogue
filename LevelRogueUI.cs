@@ -240,10 +240,6 @@ namespace LevelRogue.UI
             }
         }
 
-        public static void RefreshWarriorStatDisplay()
-	{
-	    // Логика обновления интерфейса
-	}
 	
  	private UIText CreateInfoText(string text, float top)
         {
@@ -305,7 +301,7 @@ namespace LevelRogue.UI
             skillPointsText.SetText($"Очки навыков: {modPlayer.statPoints}");
         }
     
-		public void RefreshWarriorStatDisplay()
+		public static void RefreshWarriorStatDisplay()
 		{
 			Player p = Main.LocalPlayer;
 			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
