@@ -1,0 +1,29 @@
+Items: {
+	ResetSkillBook: {
+		DisplayName: Сброс книги навыков
+		Tooltip: Используйте, чтобы сбросить очки навыков.
+	}
+
+	ResetBook: {
+		Tooltip: Используйте, чтобы сбросить все навыки.
+		DisplayName: Книга сброса навыков
+	}
+}
+
+Mods: {
+	YourModName: {
+		Buffs: {
+			WarriorStudentBuff: {
+				DisplayName: Стойкость Воина
+				Description: +5% сопротивления урону и +1.5 к регенерации здоровья.
+			}
+
+			WarriorAdeptBuff: {
+				DisplayName: Аура Стойкости
+				Description: +5% сопротивления урону союзникам рядом, +7.5% себе и +2.25 к регенерации.
+			}
+		}
+	}
+}
+
+"Keybinds.Открыть окно уровней.DisplayName": Открыть окно уровней
