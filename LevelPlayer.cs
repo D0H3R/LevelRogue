@@ -37,11 +37,14 @@ namespace LevelRogue
 		public int bonusRangedCrit = 0;   // Шанс крита
 		public float bonusRangedSpeed = 0f; // Скорость стрельбы
 		
-        public int magicDamageBonus = 0;
-		public int bonusMagicCrit = 0;
+		// Переменные для мага
+		public int spentMagicDamage;
+		public int spentMagicCrit;
+		public int spentMagicSpeed;
 		
-        public int summonDamageBonus = 0;
-		public float bonusSummonKnockback = 0f;
+		// Переменные для призывателя
+		public int spentSummonDamage;
+		public int spentSummonSpeed;
 		
         public int bonusHP = 0;
 		
@@ -91,12 +94,6 @@ namespace LevelRogue
 
 			rangedDamageBonus = tag.GetInt("rangedDamageBonus");
 			bonusRangedCrit = tag.GetInt("bonusRangedCrit");
-
-			magicDamageBonus = tag.GetInt("magicDamageBonus");
-			bonusMagicCrit = tag.GetInt("bonusMagicCrit");
-
-			summonDamageBonus = tag.GetInt("summonDamageBonus");
-			bonusSummonKnockback = tag.GetFloat("bonusSummonKnockback");
 
 			bonusHP = tag.GetInt("bonusHP");
 			regenBonus = tag.GetInt("regenBonus");
@@ -160,6 +157,23 @@ namespace LevelRogue
 			Player.GetDamage(DamageClass.Ranged) += rangedDamageBonus;
 			Player.GetCritChance(DamageClass.Ranged) += rangedCritBonus;
 			Player.GetAttackSpeed(DamageClass.Ranged) += rangedSpeedBonus;
+			
+			// Бонусы для мага
+			float magicDamageBonus = spentMagicDamage * 0.01f;
+			int magicCritBonus = spentMagicCrit;
+			float magicSpeedBonus = spentMagicSpeed * 0.01f;
+
+			Player.GetDamage(DamageClass.Magic) += magicDamageBonus;
+			Player.GetCritChance(DamageClass.Magic) += magicCritBonus;
+			Player.GetAttackSpeed(DamageClass.Magic) += magicSpeedBonus;
+
+			// Бонусы для призывателя
+			float summonDamageBonus = spentSummonDamage * 0.01f;
+			float summonSpeedBonus = spentSummonSpeed * 0.01f;
+
+			Player.GetDamage(DamageClass.Summon) += summonDamageBonus;
+			Player.whipUseTimeMultiplier += summonSpeedBonus;
+			
 		}
 
 
@@ -384,14 +398,12 @@ namespace LevelRogue
 			switch (warriorRank)
 			{
 				case WarriorRank.Student:
-					Player.endurance += 0.05f;  // +5% сопротивления урону
-					Player.lifeRegen += 15;     // +1.5 регенерации
+					Player.AddBuff(ModContent.BuffType<WarriorStudentBuff>(), 2); // Применяем WarriorStudentBuff
 					break;
 				case WarriorRank.Adept:
-					Player.endurance += 0.10f;  // пример эффекта для Adept
-					Player.lifeRegen += 30;
+					Player.AddBuff(ModContent.BuffType<WarriorAdeptBuff>(), 2); // Применяем WarriorAdeptBuff
 					break;
-				// Добавь остальные ранги по аналогии
+				// Добавьте остальные ранги с соответствующими баффами по аналогии
 			}
 		}
     }
