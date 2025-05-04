@@ -38,11 +38,15 @@ namespace LevelRogue
 		public float bonusRangedSpeed = 0f; // Скорость стрельбы
 		
 		// Переменные для мага
+		public float magicDamageBonus = 0f; // Урон магии
+		
 		public int spentMagicDamage;
 		public int spentMagicCrit;
 		public int spentMagicSpeed;
 		
 		// Переменные для призывателя
+		public float summonDamageBonus = 0f; // Урон призывателя
+		
 		public int spentSummonDamage;
 		public int spentSummonSpeed;
 		
@@ -82,6 +86,11 @@ namespace LevelRogue
 		
 		public override void LoadData(TagCompound tag)
 		{
+			// Загружаем новые поля
+			magicDamageBonus = tag.GetFloat("magicDamageBonus");
+			summonDamageBonus = tag.GetFloat("summonDamageBonus");
+
+			// Остальная загрузка
 			level = tag.GetInt("level");
 			experience = tag.GetInt("experience");
 			statPoints = tag.GetInt("statPoints");
@@ -102,7 +111,6 @@ namespace LevelRogue
 
 			bonusLuck = tag.GetFloat("bonusLuck");
 			bonusAggro = tag.GetInt("bonusAggro");
-
 		}
 		
 		public bool isPaladinPath = false;
@@ -158,8 +166,8 @@ namespace LevelRogue
 			Player.GetCritChance(DamageClass.Ranged) += rangedCritBonus;
 			Player.GetAttackSpeed(DamageClass.Ranged) += rangedSpeedBonus;
 			
-			// Бонусы для мага
-			float magicDamageBonus = spentMagicDamage * 0.01f;
+			// Применяем бонусы для мага
+			magicDamageBonus = spentMagicDamage * 0.01f;
 			int magicCritBonus = spentMagicCrit;
 			float magicSpeedBonus = spentMagicSpeed * 0.01f;
 
@@ -167,8 +175,8 @@ namespace LevelRogue
 			Player.GetCritChance(DamageClass.Magic) += magicCritBonus;
 			Player.GetAttackSpeed(DamageClass.Magic) += magicSpeedBonus;
 
-			// Бонусы для призывателя
-			float summonDamageBonus = spentSummonDamage * 0.01f;
+			// Применяем бонусы для призывателя
+			summonDamageBonus = spentSummonDamage * 0.01f;
 			float summonSpeedBonus = spentSummonSpeed * 0.01f;
 
 			Player.GetDamage(DamageClass.Summon) += summonDamageBonus;
@@ -358,6 +366,10 @@ namespace LevelRogue
 
 		public override void SaveData(TagCompound tag)
 			{
+				// Сохраняем новые поля
+				tag["magicDamageBonus"] = magicDamageBonus;
+				tag["summonDamageBonus"] = summonDamageBonus;
+				
 				tag["level"] = level;
 				tag["experience"] = experience;
 				tag["statPoints"] = statPoints;
