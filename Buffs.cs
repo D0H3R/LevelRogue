@@ -2,6 +2,7 @@ using Terraria;
 using Terraria.ModLoader;
 using Terraria.Localization;
 using LevelRogue.UI;
+using Microsoft.Xna.Framework; // Пространство имен для Vector2
 using Microsoft.Xna.Framework.Graphics;
 
 namespace LevelRogue.Buffs
@@ -34,7 +35,7 @@ namespace LevelRogue.Buffs
     public class WarriorAdeptBuff : ModBuff
     {
         public override LocalizedText DisplayName => Language.GetOrRegister("Аура Стойкости");
-        public override LocalizedText Description => Language.GetOrRegister("+5% сопротивления урону союзникам рядом, +7.5% себе и +2.25 к регенерации.");
+        public override LocalizedText Description => Language.GetOrRegister("+7.5% сопротивления урону и +2.25 к регенерации здоровья для себя, +5% сопротивления урону и +1.5 к регенерации для союзников рядом.");
 
         public static Texture2D BuffIcon;
 
@@ -48,26 +49,26 @@ namespace LevelRogue.Buffs
         }
 
         public override void Update(Player player, ref int buffIndex)
-		{
-			// Эффекты для себя
-			player.endurance += 0.075f; // Себе 7.5% сопротивления
-			player.lifeRegen += 22;     // Себе +2.25 регенерации
+        {
+            // Эффекты для себя
+            player.endurance += 0.075f; // Себе 7.5% сопротивления
+            player.lifeRegen += 22;     // Себе +2.25 регенерации
 
-			// Эффекты для союзников
-			foreach (Player otherPlayer in Main.player)
-			{
-				if (otherPlayer.active && !otherPlayer.dead && otherPlayer.whoAmI != player.whoAmI)
-				{
-					// Проверяем расстояние до другого игрока (100 тайлов = 1600 пикселей)
-					float distance = Vector2.Distance(player.Center, otherPlayer.Center);
-					if (distance <= 1600f)
-					{
-						otherPlayer.endurance += 0.05f; // +5% сопротивления урону
-						otherPlayer.lifeRegen += 15;   // +1.5 к регенерации здоровья
-					}
-				}
-			}
-		}
+            // Эффекты для союзников
+            foreach (Player otherPlayer in Main.player)
+            {
+                if (otherPlayer.active && !otherPlayer.dead && otherPlayer.whoAmI != player.whoAmI)
+                {
+                    // Проверяем расстояние до другого игрока (100 тайлов = 1600 пикселей)
+                    float distance = Vector2.Distance(player.Center, otherPlayer.Center);
+                    if (distance <= 1600f)
+                    {
+                        otherPlayer.endurance += 0.05f; // +5% сопротивления урону
+                        otherPlayer.lifeRegen += 15;   // +1.5 к регенерации здоровья
+                    }
+                }
+            }
+        }
     }
 
     // Здесь потом допишем остальные баффы: Берсерка, Паладина и т.д.
