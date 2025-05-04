@@ -1,411 +1,411 @@
 using Terraria;
 using Terraria.ModLoader;
-using Terraria.UI;
+using Terraria.ModLoader.IO;
+using Terraria.ID;
+using Terraria.DataStructures;
+using Terraria.GameContent.UI;
 using Microsoft.Xna.Framework;
-using Terraria.GameContent.UI.Elements;
-using Microsoft.Xna.Framework.Graphics;
-using System;
-using LevelRogue;
+using LevelRogue.UI;
+using LevelRogue.Buffs;
 
-namespace LevelRogue.UI
+namespace LevelRogue
 {
-    public class LevelRogueUI : UIState
-    {
-		private UIText[] warriorStatTexts = new UIText[3];
-		private int[] warriorStatLevels = new int[3];
+    public class LevelPlayer : ModPlayer
+	{
+		private int savedItemAnimation;
+		private int savedItemTime;
 
-        private UIPanel mainPanel;
-        private UIPanel playerInfoPanel;
-        private UIPanel levelInfoPanel;
-        private UIElement tabButtonsPanel;
-        private UIText hpText, mpText, defenseText, regenText, luckText, aggroText;
-        private UIText levelText, expText, skillPointsText;
+        // 🔥 Статистика игрока
+        public int level = 1;
+        public int experience = 0;
+        public int statPoints = 0;
+        public int bonusStatPoints = 0; // Дополнительные очки
 
-        private UIPanel[] tabPanels;
-		private static UIText warriorDamageText;
-		private static UIText warriorCritText;
-		private static UIText warriorSpeedText;
+        // 🔥 Бонусы
+        public int MeleeDamageBonus = 0;
+		public int bonusMeleeCrit = 0;
+		public float bonusMeleeSpeed = 0f;
+		public float bonusEndurance = 0f;
+		
+		// Переменные для Стрелка
+		public int spentRangedDamage;
+		public int spentRangedCrit;
+		public int spentRangedSpeed;
+
+		// Бонусы для Стрелка
+		public int rangedDamageBonus = 0; // Урон в процентах
+		public int bonusRangedCrit = 0;   // Шанс крита
+		public float bonusRangedSpeed = 0f; // Скорость стрельбы
+		
+        public int magicDamageBonus = 0;
+		public int bonusMagicCrit = 0;
+		
+        public int summonDamageBonus = 0;
+		public float bonusSummonKnockback = 0f;
+		
+        public int bonusHP = 0;
+		
+        public int regenBonus = 0;
+		
+        public float blockChanceBonus = 0f; // Шанс блокировки урона
+		
+		public float bonusLuck = 0f;
+		
+		public int bonusAggro = 0;
+
+        // 🔥 Потраченные очки на характеристики
+		public int spentMelee;
+		public int spentMeleeCrit;
+		public int spentMeleeSpeed;
+
+		public int spentRanged;
+		public int spentMagic;
+		public int spentSummon;
+		public int spentRogue; // если у тебя есть класс Разбойника
+		public int spentPlayer; // для общей прокачки типа HP, Regen, Crit и т.д.
+		
+		public enum WarriorRank
+		{
+			None,
+			Student,
+			Adept,
+			Berserker,
+			Paladin,
+			BloodBerserker,
+			HighPaladin,
+			LegendaryBerserker,
+			ArchangelPaladin
+		}
+		
+		public override void LoadData(TagCompound tag)
+		{
+			level = tag.GetInt("level");
+			experience = tag.GetInt("experience");
+			statPoints = tag.GetInt("statPoints");
+			bonusStatPoints = tag.GetInt("bonusStatPoints");
+
+			MeleeDamageBonus = tag.GetInt("MeleeDamageBonus");
+			bonusMeleeCrit = tag.GetInt("bonusMeleeCrit");
+			bonusMeleeSpeed = tag.GetFloat("bonusMeleeSpeed");
+			bonusEndurance = tag.GetFloat("bonusEndurance");
+
+			rangedDamageBonus = tag.GetInt("rangedDamageBonus");
+			bonusRangedCrit = tag.GetInt("bonusRangedCrit");
+
+			magicDamageBonus = tag.GetInt("magicDamageBonus");
+			bonusMagicCrit = tag.GetInt("bonusMagicCrit");
+
+			summonDamageBonus = tag.GetInt("summonDamageBonus");
+			bonusSummonKnockback = tag.GetFloat("bonusSummonKnockback");
+
+			bonusHP = tag.GetInt("bonusHP");
+			regenBonus = tag.GetInt("regenBonus");
+
+			blockChanceBonus = tag.GetFloat("blockChanceBonus");
+
+			bonusLuck = tag.GetFloat("bonusLuck");
+			bonusAggro = tag.GetInt("bonusAggro");
+
+		}
+		
+		public bool isPaladinPath = false;
+
+		public WarriorRank warriorRank = WarriorRank.None;
 
 
+		
+		
 
-        public static bool Visible;
+        // 🔥 Максимальный уровень
+        public int maxLevel = 5; // Начальный максимальный уровень
 
-        public override void OnInitialize()
+        // 🔥 Получение опыта для следующего уровня
+        public int ExpToNextLevel => GetExperienceForNextLevel();
+
+        public override void Initialize()
         {
-            mainPanel = new UIPanel();
-            mainPanel.SetPadding(0);
-            mainPanel.Width.Set(1024, 0f);
-            mainPanel.Height.Set(768, 0f);
-            mainPanel.HAlign = 0.5f;
-            mainPanel.VAlign = 0.5f;
-            Append(mainPanel);
+            level = 1;
+            experience = 0;
+            statPoints = 0;
+            bonusStatPoints = 0;
+            maxLevel = 5;
+        }
 
-            // 🔹 Панель с уровнем, опытом и очками навыков
-            levelInfoPanel = new UIPanel();
-            levelInfoPanel.Width.Set(200, 0f);
-            levelInfoPanel.Height.Set(100, 0f);
-            levelInfoPanel.Left.Set(800, 0f);
-            levelInfoPanel.Top.Set(20, 0f);
-            levelInfoPanel.SetPadding(10);
-            mainPanel.Append(levelInfoPanel);
+        public override void ResetEffects()
+		{
+			ApplyStatBonuses();
+			UpdateWarriorRank();
+			ApplyWarriorRankEffects();
 
-            levelText = CreateInfoText("Уровень: 1", 0);
-            expText = CreateInfoText("Опыт: 0 / 100", 30);
-            skillPointsText = CreateInfoText("Очки навыков: 0", 60);
+			// Временные переменные
+			float meleeDamageBonus = 0f;
+			int meleeCritBonus = 0;
+			float meleeSpeedBonus = 0f;
 
-            levelInfoPanel.Append(levelText);
-            levelInfoPanel.Append(expText);
-            levelInfoPanel.Append(skillPointsText);
+			// Применяем прокачанные бонусы
+			meleeDamageBonus += spentMelee * 0.01f;
+			meleeCritBonus += spentMeleeCrit;
+			meleeSpeedBonus += spentMeleeSpeed * 0.01f;
 
-            // 🔹 Панель с характеристиками игрока (СДВИНУТА НИЖЕ)
-            playerInfoPanel = new UIPanel();
-            playerInfoPanel.Width.Set(200, 0f);
-            playerInfoPanel.Height.Set(300, 0f);
-            playerInfoPanel.Top.Set(130, 0f); // ← Сдвинули ниже
-            playerInfoPanel.Left.Set(800, 0f);
-            mainPanel.Append(playerInfoPanel);
+			// Применяем к игроку
+			Player.GetDamage(DamageClass.Melee) += meleeDamageBonus;
+			Player.GetCritChance(DamageClass.Melee) += meleeCritBonus;
+			Player.GetAttackSpeed(DamageClass.Melee) += meleeSpeedBonus;
+			
+			// Применение бонусов для Стрелка
+			float rangedDamageBonus = spentRangedDamage * 0.01f;
+			int rangedCritBonus = spentRangedCrit;
+			float rangedSpeedBonus = spentRangedSpeed * 0.01f;
 
-            hpText = CreateInfoText("100 / 100", 0);
-            mpText = CreateInfoText("20 / 20", 30);
-            defenseText = CreateInfoText("10%", 60);
-            regenText = CreateInfoText("0.5/sec", 90);
-            luckText = CreateInfoText("0.1", 120);
-            aggroText = CreateInfoText("500", 150);
+			Player.GetDamage(DamageClass.Ranged) += rangedDamageBonus;
+			Player.GetCritChance(DamageClass.Ranged) += rangedCritBonus;
+			Player.GetAttackSpeed(DamageClass.Ranged) += rangedSpeedBonus;
+		}
 
-            playerInfoPanel.Append(hpText);
-            playerInfoPanel.Append(mpText);
-            playerInfoPanel.Append(defenseText);
-            playerInfoPanel.Append(regenText);
-            playerInfoPanel.Append(luckText);
-            playerInfoPanel.Append(aggroText);
 
-            // 🔹 Панель с кнопками вкладок
-            tabButtonsPanel = new UIElement();
-            tabButtonsPanel.Width.Set(150, 0f);
-            tabButtonsPanel.Height.Set(400, 0f);
-            tabButtonsPanel.Left.Set(20, 0f);
-            tabButtonsPanel.Top.Set(100, 0f);
-            mainPanel.Append(tabButtonsPanel);
+        private void ApplyStatBonuses()
+        {
+            Player.GetDamage(DamageClass.Melee) += MeleeDamageBonus / 100f;
+            Player.GetDamage(DamageClass.Ranged) += rangedDamageBonus / 100f;
+            Player.GetDamage(DamageClass.Magic) += magicDamageBonus / 100f;
+            Player.GetDamage(DamageClass.Summon) += summonDamageBonus / 100f;
 
-            string[] tabNames = { "Воин", "Стрелок", "Маг", "Призыватель", "Разбойник", "Игрок" };
-            tabPanels = new UIPanel[tabNames.Length];
+            Player.GetCritChance(DamageClass.Melee) += bonusMeleeCrit;
+            Player.GetCritChance(DamageClass.Ranged) += bonusMeleeCrit;
+            Player.GetCritChance(DamageClass.Magic) += bonusMeleeCrit;
+			
+			Player.GetAttackSpeed(DamageClass.Melee) += bonusMeleeSpeed;
+        }
 
-            for (int i = 0; i < tabNames.Length; i++)
-            {
-                var buttonPanel = new UIPanel();
-                buttonPanel.Width.Set(120, 0f);
-                buttonPanel.Height.Set(40, 0f);
-                buttonPanel.Top.Set(i * 50, 0f);
-                buttonPanel.HAlign = 0.5f;
-                buttonPanel.BackgroundColor = new Color(73, 94, 171);
+        public override void UpdateDead()
+        {
+            // Потеря опыта при смерти, если нужно
+        }
 
-                var buttonText = new UIText(tabNames[i], 0.85f);
-                buttonText.HAlign = 0.5f;
-                buttonText.VAlign = 0.5f;
-                buttonPanel.Append(buttonText);
+        public override void UpdateLifeRegen()
+        {
+            Player.lifeRegen += regenBonus;
+        }
 
-                int index = i;
-                buttonPanel.OnLeftClick += (evt, element) => ShowTab(index);
+        public override void PostUpdate()
+		{
 
-                tabButtonsPanel.Append(buttonPanel);
+		}
+		
+		public void UpdateWarriorRank()
+		{
+			int totalWarriorPoints = spentMelee; // Пока считаем только очки вложенные в Воина
 
-			tabPanels[i] = i switch
-					{
-						0 => CreateWarriorTab(),
-						1 => CreateRangedTab(), // Вкладка для Стрелка
-						_ => CreateTabPanel($"Прокачка для {tabNames[i]}")
-					};
+			if (totalWarriorPoints >= 150)
+			{
+				warriorRank = isPaladinPath ? WarriorRank.ArchangelPaladin : WarriorRank.LegendaryBerserker;
+			}
+			else if (totalWarriorPoints >= 100)
+			{
+				warriorRank = isPaladinPath ? WarriorRank.HighPaladin : WarriorRank.BloodBerserker;
+			}
+			else if (totalWarriorPoints >= 70)
+			{
+				warriorRank = isPaladinPath ? WarriorRank.Paladin : WarriorRank.Berserker;
+			}
+			else if (totalWarriorPoints >= 50)
+			{
+				warriorRank = WarriorRank.Adept;
+			}
+			else if (totalWarriorPoints >= 30)
+			{
+				warriorRank = WarriorRank.Student;
+			}
+			else
+			{
+				warriorRank = WarriorRank.None;
+			}
+		}
+		
+		public void SpendWarriorSkillPoint()
+		{
+			if (statPoints > 0)
+			{
+				statPoints--;
 
-					mainPanel.Append(tabPanels[i]);
+				WarriorRank oldRank = warriorRank; // запоминаем старый ранг
+				UpdateWarriorRank(); // обновляем ранг
+
+				if (warriorRank != oldRank) // если ранг изменился
+				{
+					Main.NewText($"Вы достигли ранга: {warriorRank}!", Color.Gold);
 				}
-
-			ShowTab(0);
-		}
-
-        private UIPanel CreateWarriorTab()
-		{
-			var panel = new UIPanel();
-			panel.Width.Set(500, 0f);
-			panel.Height.Set(500, 0f);
-			panel.Left.Set(180, 0f);
-			panel.Top.Set(50, 0f);
-			panel.SetPadding(10);
-
-			var title = new UIText("Прокачка для Воина", 0.9f);
-			title.Top.Set(10, 0f);
-			title.HAlign = 0.5f;
-			panel.Append(title);
-
-			
-
-			// Добавление навыков (как у тебя уже реализовано)
-			
-			Player p = Main.LocalPlayer;
-			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
-			
-			string[] statNames = { "Урон ближнего боя: ", "Шанс крита: ", "Скорость Атаки: " };
-
-			// Создание текста и кнопок для улучшения характеристик
-			for (int i = 0; i < statNames.Length; i++)
-			{
-				int index = i;
-
-				// Устанавливаем начальное значение на основе текущих характеристик
-				string initialValue = index switch
-				{
-					0 => mp.spentMelee.ToString(),     // Для урона ближнего боя
-					1 => mp.spentMeleeCrit.ToString(), // Для шанса крита
-					2 => mp.spentMeleeSpeed.ToString(),// Для скорости атаки
-					_ => "0" // Если индекс не соответствует ни одному из вышеуказанных, то показываем 0
-				};
-
-				var statText = new UIText($"{statNames[i]} {initialValue}", 0.8f); // Используем текущие значения
-				statText.Top.Set(350 + index * 40, 0f);
-				statText.Left.Set(50, 0f);
-				panel.Append(statText);
-
-				// Привязка текстовых объектов к переменным для обновления их позже
-				if (index == 0) warriorDamageText = statText;
-				else if (index == 1) warriorCritText = statText;
-				else if (index == 2) warriorSpeedText = statText;
-
-				var addButton = new UITextPanel<string>("+");
-				addButton.Width.Set(40, 0f);
-				addButton.Height.Set(30, 0f);
-				addButton.Top.Set(345 + index * 40, 0f);
-				addButton.Left.Set(300, 0f);
-				panel.Append(addButton);
-
-				addButton.OnLeftClick += (evt, el) =>
-				{
-					Player p = Main.LocalPlayer;
-					LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
-
-					if (mp.statPoints > 0)
-					{
-						switch (index)
-						{
-							case 0: mp.spentMelee++; break;
-							case 1: mp.spentMeleeCrit++; break;
-							case 2: mp.spentMeleeSpeed++; break;
-						}
-
-						mp.statPoints--;
-						skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
-						RefreshWarriorStatDisplay(); // Обновить визуально
-					}
-					else
-					{
-						Main.NewText("Недостаточно очков навыков!");
-					}
-				};
 			}
-			return panel;
 		}
 
 
-        private UIPanel CreateTabPanel(string title)
+		public void AddExperience(int amount)
+		{
+			if (level >= maxLevel)
+			{
+				// Останавливаем опыт при максимальном уровне
+				return;
+			}
+			
+			experience += amount;
+
+			while (experience >= ExpToNextLevel && level < maxLevel)
+			{
+				experience -= ExpToNextLevel;
+				level++;
+				statPoints += 2;
+				CombatText.NewText(Player.getRect(), Color.Green, $"Уровень {level}!");
+			}
+		}
+
+        private int GetExperienceForNextLevel()
         {
-            var panel = new UIPanel();
-            panel.Width.Set(500, 0f);
-            panel.Height.Set(500, 0f);
-            panel.Left.Set(180, 0f);
-            panel.Top.Set(50, 0f);
-            panel.SetPadding(10);
-
-            var text = new UIText(title, 0.9f);
-            text.Top.Set(10, 0f);
-            text.HAlign = 0.5f;
-            panel.Append(text);
-
-            var exampleText = new UIText("Здесь будут опции прокачки.", 0.75f);
-            exampleText.Top.Set(60, 0f);
-            exampleText.HAlign = 0.5f;
-            panel.Append(exampleText);
-
-            return panel;
+            return 500 + 50 * level * level - 50; // Формула для опыта
         }
 
-        private void ShowTab(int tabIndex)
+        public void ResetStats()
+		{
+			// Сбрасываем затраченные очки
+			spentMelee = 0;
+			spentMeleeCrit = 0;
+			spentMeleeSpeed = 0;
+			spentRanged = 0;
+			spentMagic = 0;
+			spentSummon = 0;
+			spentRogue = 0;
+			spentPlayer = 0;
+
+			// Сбрасываем бонусы
+			MeleeDamageBonus = 0;
+			bonusMeleeCrit = 0;
+			bonusMeleeSpeed = 0f;
+			bonusEndurance = 0f;
+			magicDamageBonus = 0;
+			bonusMagicCrit = 0;
+			summonDamageBonus = 0;
+			bonusSummonKnockback = 0f;
+			bonusHP = 0;
+			regenBonus = 0;
+			bonusLuck = 0f;
+			bonusAggro = 0;
+			
+			// Сбрасываем бонусы для Стрелка
+			rangedDamageBonus = 0;
+			bonusRangedCrit = 0;
+			bonusRangedSpeed = 0f;
+
+			// Сбрасываем затраченные очки
+			spentRangedDamage = 0;
+			spentRangedCrit = 0;
+			spentRangedSpeed = 0;
+
+			// Пересчитываем очки навыков по уровню
+			statPoints = level * 2 + bonusStatPoints;
+		}
+
+
+        public void ResetStat(string statName)
         {
-            for (int i = 0; i < tabPanels.Length; i++)
+            switch (statName)
             {
-                if (i == tabIndex)
-                {
-                    if (!mainPanel.HasChild(tabPanels[i]))
-                        mainPanel.Append(tabPanels[i]);
-                }
-                else
-                {
-                    if (mainPanel.HasChild(tabPanels[i]))
-                        mainPanel.RemoveChild(tabPanels[i]);
-                }
+                case "Melee":
+                    MeleeDamageBonus = 0;
+                    break;
+                case "Ranged":
+                    rangedDamageBonus = 0;;
+                    break;
+                case "Magic":
+                    magicDamageBonus = 0;
+                    break;
+                case "Summon":
+                    summonDamageBonus = 0;
+                    break;
+                case "HP":
+                    bonusHP = 0;
+                    break;
+                case "Regen":
+                    regenBonus = 0;
+                    break;
+                case "Crit":
+                    bonusMeleeCrit = 0;
+                    break;
             }
+
+            statPoints = level * 2 + bonusStatPoints;
         }
 
-	
- 	private UIText CreateInfoText(string text, float top)
+        public override void ModifyMaxStats(out StatModifier health, out StatModifier mana)
         {
-            var uiText = new UIText(text);
-            uiText.Top.Set(top, 0f);
-            uiText.HAlign = 0.5f;
-            return uiText;
+            health = StatModifier.Default;
+            mana = StatModifier.Default;
+
+            health.Base += bonusHP; // Увеличение максимального здоровья
         }
 
-        protected override void DrawSelf(SpriteBatch spriteBatch)
-        {
-            base.DrawSelf(spriteBatch);
-
-            if (!Visible)
-                return;
-
-            Player player = Main.LocalPlayer;
-
-            Vector2 drawPosition = new Vector2(mainPanel.GetDimensions().X + 600, mainPanel.GetDimensions().Y + 100);
-
-            Vector2 oldPos = player.position;
-            Vector2 oldScreenPos = Main.screenPosition;
-            int oldDirection = player.direction;
-
-            player.direction = 1;
-            player.heldProj = -1;
-            player.itemAnimation = 0;
-            player.itemTime = 0;
-
-            player.position = drawPosition;
-            Main.screenPosition = Vector2.Zero;
-
-            Main.PlayerRenderer.DrawPlayer(Main.Camera, player, drawPosition, 0f, Vector2.One, 0);
-
-            player.position = oldPos;
-            Main.screenPosition = oldScreenPos;
-            player.direction = oldDirection;
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            if (!Visible)
-                return;
-
-            base.Update(gameTime);
-
-            Player player = Main.LocalPlayer;
-            LevelPlayer modPlayer = player.GetModPlayer<LevelPlayer>();
-
-            hpText.SetText($"{player.statLife} / {player.statLifeMax2}");
-            mpText.SetText($"{player.statMana} / {player.statManaMax2}");
-            defenseText.SetText($"{Math.Round(player.endurance * 100, 1)}%");
-            regenText.SetText($"{Math.Round(player.lifeRegen / 2f, 1)} / sec");
-            luckText.SetText($"{Math.Round(player.luck, 2)}");
-            aggroText.SetText($"{player.aggro}");
-
-            levelText.SetText($"Уровень: {modPlayer.level}");
-            expText.SetText($"Опыт: {modPlayer.experience} / {modPlayer.ExpToNextLevel}");
-            skillPointsText.SetText($"Очки навыков: {modPlayer.statPoints}");
-        }
-    
-		public static void RefreshWarriorStatDisplay()
-		{
-			Player p = Main.LocalPlayer;
-			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
-
-			if (warriorDamageText != null)
-				warriorDamageText.SetText($"Урон ближнего боя: {mp.spentMelee}");
-			if (warriorCritText != null)
-				warriorCritText.SetText($"Шанс крита: {mp.spentMeleeCrit}");
-			if (warriorSpeedText != null)
-				warriorSpeedText.SetText($"Скорость Атаки: {mp.spentMeleeSpeed}");
-		}
-
-		
-		private UIPanel CreateRangedTab()
-		{
-			var panel = new UIPanel();
-			panel.Width.Set(500, 0f);
-			panel.Height.Set(500, 0f);
-			panel.Left.Set(180, 0f);
-			panel.Top.Set(50, 0f);
-			panel.SetPadding(10);
-
-			var title = new UIText("Прокачка для Стрелка", 0.9f);
-			title.Top.Set(10, 0f);
-			title.HAlign = 0.5f;
-			panel.Append(title);
-
-			Player p = Main.LocalPlayer;
-			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
-
-			string[] statNames = { "Урон дальнего боя: ", "Шанс крита: ", "Скорость стрельбы: " };
-
-			for (int i = 0; i < statNames.Length; i++)
+		public override void SaveData(TagCompound tag)
 			{
-				int index = i;
+				tag["level"] = level;
+				tag["experience"] = experience;
+				tag["statPoints"] = statPoints;
+				tag["bonusStatPoints"] = bonusStatPoints;
 
-				string initialValue = index switch
-				{
-					0 => mp.spentRangedDamage.ToString(),
-					1 => mp.spentRangedCrit.ToString(),
-					2 => mp.spentRangedSpeed.ToString(),
-					_ => "0"
-				};
+				tag["MeleeDamageBonus"] = MeleeDamageBonus;
+				tag["bonusMeleeCrit"] = bonusMeleeCrit;
+				tag["bonusMeleeSpeed"] = bonusMeleeSpeed;
+				tag["bonusEndurance"] = bonusEndurance;
 
-				var statText = new UIText($"{statNames[i]} {initialValue}", 0.8f);
-				statText.Top.Set(350 + index * 40, 0f);
-				statText.Left.Set(50, 0f);
-				panel.Append(statText);
+				tag["rangedDamageBonus"] = rangedDamageBonus;
+				tag["bonusRangedCrit"] = bonusRangedCrit;
 
-				// Привязка текстовых объектов к переменным для обновления
-				if (index == 0) rangedDamageText = statText;
-				else if (index == 1) rangedCritText = statText;
-				else if (index == 2) rangedSpeedText = statText;
+				tag["magicDamageBonus"] = magicDamageBonus;
+				tag["bonusMagicCrit"] = bonusMagicCrit;
 
-				var addButton = new UITextPanel<string>("+");
-				addButton.Width.Set(40, 0f);
-				addButton.Height.Set(30, 0f);
-				addButton.Top.Set(345 + index * 40, 0f);
-				addButton.Left.Set(300, 0f);
-				panel.Append(addButton);
+				tag["summonDamageBonus"] = summonDamageBonus;
+				tag["bonusSummonKnockback"] = bonusSummonKnockback;
 
-				addButton.OnLeftClick += (evt, el) =>
-				{
-					if (mp.statPoints > 0)
-					{
-						switch (index)
-						{
-							case 0: mp.spentRangedDamage++; break;
-							case 1: mp.spentRangedCrit++; break;
-							case 2: mp.spentRangedSpeed++; break;
-						}
+				tag["bonusHP"] = bonusHP;
+				tag["regenBonus"] = regenBonus;
 
-						mp.statPoints--;
-						skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
-						RefreshRangedStatDisplay();
-					}
-					else
-					{
-						Main.NewText("Недостаточно очков навыков!");
-					}
-				};
+				tag["blockChanceBonus"] = blockChanceBonus;
+
+				tag["bonusLuck"] = bonusLuck;
+				tag["bonusAggro"] = bonusAggro;
+
+				tag["spentMelee"] = spentMelee;
+				tag["spentRanged"] = spentRanged;
+				tag["spentMagic"] = spentMagic;
+				tag["spentSummon"] = spentSummon;
+				tag["spentRogue"] = spentRogue;
+				tag["spentPlayer"] = spentPlayer;
 			}
-			return panel;
-		}
 
-		private static UIText rangedDamageText;
-		private static UIText rangedCritText;
-		private static UIText rangedSpeedText;
+		
 
-		public static void RefreshRangedStatDisplay()
+        // 🔥 Блокировка урона
+        public override void ModifyHurt(ref Player.HurtModifiers hurtModifiers)
 		{
-			Player p = Main.LocalPlayer;
-			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
-
-			if (rangedDamageText != null)
-				rangedDamageText.SetText($"Урон дальнего боя: {mp.spentRangedDamage}");
-			if (rangedCritText != null)
-				rangedCritText.SetText($"Шанс крита: {mp.spentRangedCrit}");
-			if (rangedSpeedText != null)
-				rangedSpeedText.SetText($"Скорость стрельбы: {mp.spentRangedSpeed}");
+			// Если блокировка сработала
+			if (Main.rand.NextFloat() < blockChanceBonus)
+			{
+				hurtModifiers.FinalDamage = new StatModifier(0f, 0f, 0f, 0f); // Блокируем весь урон
+				Main.NewText("Вы блокировали урон!", Color.Green); // Сообщение
+			}
 		}
 		
-	}
+		private void ApplyWarriorRankEffects()
+		{
+			switch (warriorRank)
+			{
+				case WarriorRank.Student:
+					Player.endurance += 0.05f;  // +5% сопротивления урону
+					Player.lifeRegen += 15;     // +1.5 регенерации
+					break;
+				case WarriorRank.Adept:
+					Player.endurance += 0.10f;  // пример эффекта для Adept
+					Player.lifeRegen += 30;
+					break;
+				// Добавь остальные ранги по аналогии
+			}
+		}
+    }
 }
