@@ -390,22 +390,172 @@ namespace LevelRogue.UI
 			return panel;
 		}
 
-		private static UIText rangedDamageText;
-		private static UIText rangedCritText;
-		private static UIText rangedSpeedText;
+			private static UIText rangedDamageText;
+			private static UIText rangedCritText;
+			private static UIText rangedSpeedText;
 
-		public static void RefreshRangedStatDisplay()
+			public static void RefreshRangedStatDisplay()
+			{
+				Player p = Main.LocalPlayer;
+				LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
+
+				if (rangedDamageText != null)
+					rangedDamageText.SetText($"Урон дальнего боя: {mp.spentRangedDamage}");
+				if (rangedCritText != null)
+					rangedCritText.SetText($"Шанс крита: {mp.spentRangedCrit}");
+				if (rangedSpeedText != null)
+					rangedSpeedText.SetText($"Скорость стрельбы: {mp.spentRangedSpeed}");
+			}
+			
+		
+		// Добавление вкладок для мага и призывателя
+		private UIPanel CreateMagicTab()
 		{
+			var panel = new UIPanel();
+			panel.Width.Set(500, 0f);
+			panel.Height.Set(500, 0f);
+			panel.Left.Set(180, 0f);
+			panel.Top.Set(50, 0f);
+			panel.SetPadding(10);
+
+			var title = new UIText("Прокачка для Мага", 0.9f);
+			title.Top.Set(10, 0f);
+			title.HAlign = 0.5f;
+			panel.Append(title);
+
 			Player p = Main.LocalPlayer;
 			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
 
-			if (rangedDamageText != null)
-				rangedDamageText.SetText($"Урон дальнего боя: {mp.spentRangedDamage}");
-			if (rangedCritText != null)
-				rangedCritText.SetText($"Шанс крита: {mp.spentRangedCrit}");
-			if (rangedSpeedText != null)
-				rangedSpeedText.SetText($"Скорость стрельбы: {mp.spentRangedSpeed}");
+			string[] statNames = { "Урон магии: ", "Шанс крита: ", "Скорость атак: " };
+			UIText[] statTexts = new UIText[statNames.Length];
+
+			for (int i = 0; i < statNames.Length; i++)
+			{
+				int index = i;
+				string initialValue = index switch
+				{
+					0 => mp.spentMagicDamage.ToString(),
+					1 => mp.spentMagicCrit.ToString(),
+					2 => mp.spentMagicSpeed.ToString(),
+					_ => "0"
+				};
+
+				var statText = new UIText($"{statNames[i]} {initialValue}", 0.8f);
+				statText.Top.Set(350 + index * 40, 0f);
+				statText.Left.Set(50, 0f);
+				panel.Append(statText);
+				statTexts[i] = statText;
+
+				var addButton = new UITextPanel<string>("+");
+				addButton.Width.Set(40, 0f);
+				addButton.Height.Set(30, 0f);
+				addButton.Top.Set(345 + index * 40, 0f);
+				addButton.Left.Set(300, 0f);
+				panel.Append(addButton);
+
+				addButton.OnLeftClick += (evt, el) =>
+				{
+					if (mp.statPoints > 0)
+					{
+						switch (index)
+						{
+							case 0: mp.spentMagicDamage++; break;
+							case 1: mp.spentMagicCrit++; break;
+							case 2: mp.spentMagicSpeed++; break;
+						}
+
+						mp.statPoints--;
+						skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
+						RefreshMagicStatDisplay(statTexts, mp);
+					}
+					else
+					{
+						Main.NewText("Недостаточно очков навыков!");
+					}
+				};
+			}
+
+			return panel;
 		}
-		
-	}
+
+		private void RefreshMagicStatDisplay(UIText[] statTexts, LevelPlayer mp)
+		{
+			statTexts[0].SetText($"Урон магии: {mp.spentMagicDamage}");
+			statTexts[1].SetText($"Шанс крита: {mp.spentMagicCrit}");
+			statTexts[2].SetText($"Скорость атак: {mp.spentMagicSpeed}");
+		}
+
+		private UIPanel CreateSummonerTab()
+		{
+			var panel = new UIPanel();
+			panel.Width.Set(500, 0f);
+			panel.Height.Set(500, 0f);
+			panel.Left.Set(180, 0f);
+			panel.Top.Set(50, 0f);
+			panel.SetPadding(10);
+
+			var title = new UIText("Прокачка для Призывателя", 0.9f);
+			title.Top.Set(10, 0f);
+			title.HAlign = 0.5f;
+			panel.Append(title);
+
+			Player p = Main.LocalPlayer;
+			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
+
+			string[] statNames = { "Урон призывателя: ", "Скорость хлыстов: " };
+			UIText[] statTexts = new UIText[statNames.Length];
+
+			for (int i = 0; i < statNames.Length; i++)
+			{
+				int index = i;
+				string initialValue = index switch
+				{
+					0 => mp.spentSummonDamage.ToString(),
+					1 => mp.spentSummonSpeed.ToString(),
+					_ => "0"
+				};
+
+				var statText = new UIText($"{statNames[i]} {initialValue}", 0.8f);
+				statText.Top.Set(350 + index * 40, 0f);
+				statText.Left.Set(50, 0f);
+				panel.Append(statText);
+				statTexts[i] = statText;
+
+				var addButton = new UITextPanel<string>("+");
+				addButton.Width.Set(40, 0f);
+				addButton.Height.Set(30, 0f);
+				addButton.Top.Set(345 + index * 40, 0f);
+				addButton.Left.Set(300, 0f);
+				panel.Append(addButton);
+
+				addButton.OnLeftClick += (evt, el) =>
+				{
+					if (mp.statPoints > 0)
+					{
+						switch (index)
+						{
+							case 0: mp.spentSummonDamage++; break;
+							case 1: mp.spentSummonSpeed++; break;
+						}
+
+						mp.statPoints--;
+						skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
+						RefreshSummonerStatDisplay(statTexts, mp);
+					}
+					else
+					{
+						Main.NewText("Недостаточно очков навыков!");
+					}
+				};
+			}
+
+			return panel;
+		}
+
+		private void RefreshSummonerStatDisplay(UIText[] statTexts, LevelPlayer mp)
+		{
+			statTexts[0].SetText($"Урон призывателя: {mp.spentSummonDamage}");
+			statTexts[1].SetText($"Скорость хлыстов: {mp.spentSummonSpeed}");
+		}
+	}	
 }
