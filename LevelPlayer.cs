@@ -39,6 +39,7 @@ namespace LevelRogue
 		
 		// Переменные для мага
 		public float magicDamageBonus = 0f; // Урон магии
+		public int bonusMagicCrit = 0; // Шанс критического удара магией	
 		
 		public int spentMagicDamage;
 		public int spentMagicCrit;
@@ -46,6 +47,7 @@ namespace LevelRogue
 		
 		// Переменные для призывателя
 		public float summonDamageBonus = 0f; // Урон призывателя
+		public float summonSpeedBonus = 0f; // Скорость хлыстов
 		
 		public int spentSummonDamage;
 		public int spentSummonSpeed;
@@ -88,7 +90,6 @@ namespace LevelRogue
 		{
 			// Загружаем новые поля
 			magicDamageBonus = tag.GetFloat("magicDamageBonus");
-			summonDamageBonus = tag.GetFloat("summonDamageBonus");
 
 			// Остальная загрузка
 			level = tag.GetInt("level");
@@ -103,6 +104,9 @@ namespace LevelRogue
 
 			rangedDamageBonus = tag.GetInt("rangedDamageBonus");
 			bonusRangedCrit = tag.GetInt("bonusRangedCrit");
+			
+			summonDamageBonus = tag.GetInt("summonDamageBonus");
+			summonSpeedBonus = tag.GetInt("summonSpeedBonus");
 
 			bonusHP = tag.GetInt("bonusHP");
 			regenBonus = tag.GetInt("regenBonus");
@@ -180,7 +184,7 @@ namespace LevelRogue
 			float summonSpeedBonus = spentSummonSpeed * 0.01f;
 
 			Player.GetDamage(DamageClass.Summon) += summonDamageBonus;
-			Player.whipUseTimeMultiplier += summonSpeedBonus;
+			Player.GetAttackSpeed(DamageClass.Summon) += summonSpeedBonus;
 			
 		}
 
@@ -305,7 +309,6 @@ namespace LevelRogue
 			magicDamageBonus = 0;
 			bonusMagicCrit = 0;
 			summonDamageBonus = 0;
-			bonusSummonKnockback = 0f;
 			bonusHP = 0;
 			regenBonus = 0;
 			bonusLuck = 0f;
@@ -387,7 +390,7 @@ namespace LevelRogue
 				tag["bonusMagicCrit"] = bonusMagicCrit;
 
 				tag["summonDamageBonus"] = summonDamageBonus;
-				tag["bonusSummonKnockback"] = bonusSummonKnockback;
+				tag["summonSpeedBonus"] = summonSpeedBonus;
 
 				tag["bonusHP"] = bonusHP;
 				tag["regenBonus"] = regenBonus;
