@@ -60,7 +60,6 @@ namespace LevelRogue.Items
             modPlayer.magicDamageBonus = 0f; // Урон магии
             modPlayer.bonusMagicCrit = 0;
             modPlayer.summonDamageBonus = 0f; // Урон призывателя
-            modPlayer.bonusSummonKnockback = 0f;
 
             modPlayer.bonusHP = 0;
             modPlayer.regenBonus = 0;
