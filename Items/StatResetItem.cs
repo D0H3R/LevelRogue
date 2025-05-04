@@ -10,7 +10,7 @@ namespace LevelRogue.Items
     public class ResetSkillBook : ModItem
     {
         public override LocalizedText DisplayName => Language.GetOrRegister("Том Перерождения");
-        public override LocalizedText Tooltip => Language.GetOrRegister("Позволяет сбросить очки характеристик и перераспределить их");
+        public override LocalizedText Tooltip => Language.GetOrRegister("Позволяет сбросить очки характеристик и перераспределить их.");
 
         public override void SetStaticDefaults()
         {
@@ -34,7 +34,8 @@ namespace LevelRogue.Items
         public override bool CanUseItem(Player player)
         {
             LevelPlayer modPlayer = player.GetModPlayer<LevelPlayer>();
-            return modPlayer.spentMelee + modPlayer.spentRanged + modPlayer.spentMagic + modPlayer.spentSummon + modPlayer.spentRogue + modPlayer.spentPlayer >= 0;
+            return modPlayer.spentMelee + modPlayer.spentRanged + modPlayer.spentMagic + 
+                   modPlayer.spentSummon + modPlayer.spentRogue + modPlayer.spentPlayer > 0;
         }
 
         public override bool? UseItem(Player player)
@@ -43,9 +44,9 @@ namespace LevelRogue.Items
 
             Main.NewText("Очки характеристик сброшены! Можно перераспределить их заново.", 255, 240, 20);
 
-            modPlayer.ResetStats(); // Сбросить характеристики
+            modPlayer.ResetStats();
 
-            // Добавлено обновление интерфейса
+            // Обновление интерфейса
             LevelRogueUI.RefreshWarriorStatDisplay();
 
             return true;
