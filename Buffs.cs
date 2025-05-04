@@ -48,11 +48,26 @@ namespace LevelRogue.Buffs
         }
 
         public override void Update(Player player, ref int buffIndex)
-        {
-            player.endurance += 0.075f; // Себе 7.5% сопротивления
-            player.lifeRegen += 22;     // Себе +2.25 регенерации
-            // Эффекты на союзников можно будет добавить позже
-        }
+		{
+			// Эффекты для себя
+			player.endurance += 0.075f; // Себе 7.5% сопротивления
+			player.lifeRegen += 22;     // Себе +2.25 регенерации
+
+			// Эффекты для союзников
+			foreach (Player otherPlayer in Main.player)
+			{
+				if (otherPlayer.active && !otherPlayer.dead && otherPlayer.whoAmI != player.whoAmI)
+				{
+					// Проверяем расстояние до другого игрока (100 тайлов = 1600 пикселей)
+					float distance = Vector2.Distance(player.Center, otherPlayer.Center);
+					if (distance <= 1600f)
+					{
+						otherPlayer.endurance += 0.05f; // +5% сопротивления урону
+						otherPlayer.lifeRegen += 15;   // +1.5 к регенерации здоровья
+					}
+				}
+			}
+		}
     }
 
     // Здесь потом допишем остальные баффы: Берсерка, Паладина и т.д.
