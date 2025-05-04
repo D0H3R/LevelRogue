@@ -378,19 +378,6 @@ namespace LevelRogue
 				tag["spentRogue"] = spentRogue;
 				tag["spentPlayer"] = spentPlayer;
 			}
-
-		
-
-        // 🔥 Блокировка урона
-        public override void ModifyHurt(ref Player.HurtModifiers hurtModifiers)
-		{
-			// Если блокировка сработала
-			if (Main.rand.NextFloat() < blockChanceBonus)
-			{
-				hurtModifiers.FinalDamage = new StatModifier(0f, 0f, 0f, 0f); // Блокируем весь урон
-				Main.NewText("Вы блокировали урон!", Color.Green); // Сообщение
-			}
-		}
 		
 		private void ApplyWarriorRankEffects()
 		{
