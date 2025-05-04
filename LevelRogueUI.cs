@@ -109,15 +109,18 @@ namespace LevelRogue.UI
 
                 tabButtonsPanel.Append(buttonPanel);
 
-                tabPanels[i] = i == 0
-                    ? CreateWarriorTab()
-                    : CreateTabPanel($"Прокачка для {tabNames[i]}");
+			tabPanels[i] = i switch
+					{
+						0 => CreateWarriorTab(),
+						1 => CreateRangedTab(), // Вкладка для Стрелка
+						_ => CreateTabPanel($"Прокачка для {tabNames[i]}")
+					};
 
-                mainPanel.Append(tabPanels[i]);
-            }
+					mainPanel.Append(tabPanels[i]);
+				}
 
-            ShowTab(0);
-        }
+			ShowTab(0);
+		}
 
         private UIPanel CreateWarriorTab()
 		{
