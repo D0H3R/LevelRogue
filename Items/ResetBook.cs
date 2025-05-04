@@ -10,7 +10,7 @@ namespace LevelRogue.Items
     public class ResetBook : ModItem
     {
         public override LocalizedText DisplayName => Language.GetOrRegister("Книга Забвения");
-        public override LocalizedText Tooltip => Language.GetOrRegister("Возвращает уровень и умения вашего персонажа в изначальное состояние");
+        public override LocalizedText Tooltip => Language.GetOrRegister("Возвращает уровень и умения вашего персонажа в изначальное состояние.");
 
         public override void SetStaticDefaults()
         {
@@ -57,10 +57,9 @@ namespace LevelRogue.Items
             modPlayer.rangedDamageBonus = 0;
             modPlayer.bonusRangedCrit = 0;
 
-            modPlayer.magicDamageBonus = 0;
+            modPlayer.magicDamageBonus = 0f; // Урон магии
             modPlayer.bonusMagicCrit = 0;
-
-            modPlayer.summonDamageBonus = 0;
+            modPlayer.summonDamageBonus = 0f; // Урон призывателя
             modPlayer.bonusSummonKnockback = 0f;
 
             modPlayer.bonusHP = 0;
@@ -69,13 +68,19 @@ namespace LevelRogue.Items
             modPlayer.bonusAggro = 0;
 
             // Сбрасываем затраченные очки
-			
-			modPlayer.UpdateWarriorRank();
+            modPlayer.spentMelee = 0;
+            modPlayer.spentRanged = 0;
+            modPlayer.spentMagic = 0;
+            modPlayer.spentSummon = 0;
+            modPlayer.spentRogue = 0;
+            modPlayer.spentPlayer = 0;
 
+            modPlayer.UpdateWarriorRank();
 
             Main.NewText("Ваш уровень и характеристики были полностью обнулены!", 255, 60, 60);
 
             // Обновляем интерфейс
+            LevelRogueUI.RefreshWarriorStatDisplay();
 
             return true;
         }
