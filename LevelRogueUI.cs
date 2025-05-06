@@ -110,9 +110,11 @@ namespace LevelRogue.UI
                 tabButtonsPanel.Append(buttonPanel);
 
 			tabPanels[i] = i switch
-					{
-						0 => CreateWarriorTab(),
+					{	
+						0 => CreateWarriorTab(), // Вкладка для Воина
 						1 => CreateRangedTab(), // Вкладка для Стрелка
+						2 => CreateMagicTab(), // Вкладка для Магов
+						3 => CreateSummonerTab(), // Вкладка для Призывателя
 						_ => CreateTabPanel($"Прокачка для {tabNames[i]}")
 					};
 
@@ -226,22 +228,22 @@ namespace LevelRogue.UI
             return panel;
         }
 
-        private void ShowTab(int tabIndex)
-        {
-            for (int i = 0; i < tabPanels.Length; i++)
-            {
-                if (i == tabIndex)
-                {
-                    if (!mainPanel.HasChild(tabPanels[i]))
-                        mainPanel.Append(tabPanels[i]);
-                }
-                else
-                {
-                    if (mainPanel.HasChild(tabPanels[i]))
-                        mainPanel.RemoveChild(tabPanels[i]);
-                }
-            }
-        }
+		private void ShowTab(int tabIndex)
+		{
+			for (int i = 0; i < tabPanels.Length; i++)
+			{
+				if (i == tabIndex)
+				{
+					if (!mainPanel.HasChild(tabPanels[i]))
+						mainPanel.Append(tabPanels[i]);
+				}
+				else
+				{
+					if (mainPanel.HasChild(tabPanels[i]))
+						mainPanel.RemoveChild(tabPanels[i]);
+				}
+			}
+		}
 
 	
  	private UIText CreateInfoText(string text, float top)
@@ -390,11 +392,11 @@ namespace LevelRogue.UI
 			return panel;
 		}
 
-			private static UIText rangedDamageText;
-			private static UIText rangedCritText;
-			private static UIText rangedSpeedText;
+		private static UIText rangedDamageText;
+		private static UIText rangedCritText;
+		private static UIText rangedSpeedText;
 
-			public static void RefreshRangedStatDisplay()
+		public static void RefreshRangedStatDisplay()
 			{
 				Player p = Main.LocalPlayer;
 				LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
@@ -408,7 +410,7 @@ namespace LevelRogue.UI
 			}
 			
 		
-		// Добавление вкладок для мага и призывателя
+		// Вкладка для Мага
 		private UIPanel CreateMagicTab()
 		{
 			var panel = new UIPanel();
@@ -426,12 +428,12 @@ namespace LevelRogue.UI
 			Player p = Main.LocalPlayer;
 			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
 
-			string[] statNames = { "Урон магии: ", "Шанс крита: ", "Скорость атак: " };
-			UIText[] statTexts = new UIText[statNames.Length];
+			string[] statNames = { "Магический Урон: ", "Шанс крита: ", "Скорость заклинаний: " };
 
 			for (int i = 0; i < statNames.Length; i++)
 			{
 				int index = i;
+
 				string initialValue = index switch
 				{
 					0 => mp.spentMagicDamage.ToString(),
@@ -444,7 +446,11 @@ namespace LevelRogue.UI
 				statText.Top.Set(350 + index * 40, 0f);
 				statText.Left.Set(50, 0f);
 				panel.Append(statText);
-				statTexts[i] = statText;
+
+				// Привязка текстовых объектов к переменным для обновления
+				if (index == 0) MagicDamageText = statText;
+				else if (index == 1) MagicCritText = statText;
+				else if (index == 2) MagicSpeedText = statText;
 
 				var addButton = new UITextPanel<string>("+");
 				addButton.Width.Set(40, 0f);
@@ -466,7 +472,7 @@ namespace LevelRogue.UI
 
 						mp.statPoints--;
 						skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
-						RefreshMagicStatDisplay(statTexts, mp);
+						RefreshRangedStatDisplay();
 					}
 					else
 					{
@@ -474,17 +480,28 @@ namespace LevelRogue.UI
 					}
 				};
 			}
-
 			return panel;
 		}
 
-		private void RefreshMagicStatDisplay(UIText[] statTexts, LevelPlayer mp)
-		{
-			statTexts[0].SetText($"Урон магии: {mp.spentMagicDamage}");
-			statTexts[1].SetText($"Шанс крита: {mp.spentMagicCrit}");
-			statTexts[2].SetText($"Скорость атак: {mp.spentMagicSpeed}");
-		}
+		private static UIText MagicDamageText;
+		private static UIText MagicCritText;
+		private static UIText MagicSpeedText;
 
+		public static void RefreshMagicStatDisplay()
+		{
+			Player p = Main.LocalPlayer;
+			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
+
+			if (MagicDamageText != null)
+				MagicDamageText.SetText($"Урон магического боя: {mp.spentMagicDamage}");
+			if (MagicCritText != null)
+				MagicCritText.SetText($"Шанс крита: {mp.spentMagicCrit}");
+			if (MagicSpeedText != null)
+				MagicSpeedText.SetText($"Скорость заклинаний: {mp.spentMagicSpeed}");
+		}
+			
+		
+		// Вкладка для Призывателя
 		private UIPanel CreateSummonerTab()
 		{
 			var panel = new UIPanel();
@@ -539,8 +556,8 @@ namespace LevelRogue.UI
 						}
 
 						mp.statPoints--;
-						skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
-						RefreshSummonerStatDisplay(statTexts, mp);
+						statTexts[index].SetText($"{statNames[index]} {mp.spentSummonDamage}");
+						Main.NewText("Характеристика улучшена!");
 					}
 					else
 					{
@@ -557,5 +574,6 @@ namespace LevelRogue.UI
 			statTexts[0].SetText($"Урон призывателя: {mp.spentSummonDamage}");
 			statTexts[1].SetText($"Скорость хлыстов: {mp.spentSummonSpeed}");
 		}
-	}	
+	}
+		
 }
