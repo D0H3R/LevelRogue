@@ -461,6 +461,9 @@ namespace LevelRogue.UI
 
 				addButton.OnLeftClick += (evt, el) =>
 				{
+					Player p = Main.LocalPlayer;
+					LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
+
 					if (mp.statPoints > 0)
 					{
 						switch (index)
@@ -471,8 +474,12 @@ namespace LevelRogue.UI
 						}
 
 						mp.statPoints--;
+
+						// Обновляем интерфейс
 						skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
-						RefreshRangedStatDisplay();
+						RefreshMagicStatDisplay(); // Обязательно вызываем обновление отображения для мага
+
+						Main.NewText("Характеристика улучшена!");
 					}
 					else
 					{
@@ -493,7 +500,7 @@ namespace LevelRogue.UI
 			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
 
 			if (MagicDamageText != null)
-				MagicDamageText.SetText($"Урон магического боя: {mp.spentMagicDamage}");
+				MagicDamageText.SetText($"Магический Урон: {mp.spentMagicDamage}");
 			if (MagicCritText != null)
 				MagicCritText.SetText($"Шанс крита: {mp.spentMagicCrit}");
 			if (MagicSpeedText != null)
@@ -501,7 +508,6 @@ namespace LevelRogue.UI
 		}
 			
 		
-		// Вкладка для Призывателя
 		private UIPanel CreateSummonerTab()
 		{
 			var panel = new UIPanel();
@@ -536,7 +542,10 @@ namespace LevelRogue.UI
 				statText.Top.Set(350 + index * 40, 0f);
 				statText.Left.Set(50, 0f);
 				panel.Append(statText);
-				statTexts[i] = statText;
+
+				// Привязываем текстовые элементы к статическим переменным
+				if (index == 0) SummonDamageText = statText;
+				if (index == 1) SummonSpeedText = statText;
 
 				var addButton = new UITextPanel<string>("+");
 				addButton.Width.Set(40, 0f);
@@ -547,6 +556,9 @@ namespace LevelRogue.UI
 
 				addButton.OnLeftClick += (evt, el) =>
 				{
+					Player p = Main.LocalPlayer;
+					LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
+
 					if (mp.statPoints > 0)
 					{
 						switch (index)
@@ -556,7 +568,11 @@ namespace LevelRogue.UI
 						}
 
 						mp.statPoints--;
-						statTexts[index].SetText($"{statNames[index]} {mp.spentSummonDamage}");
+
+						// Обновляем интерфейс
+						skillPointsText.SetText($"Очки навыков: {mp.statPoints}");
+						RefreshSummonerStatDisplay(); // Обновляем вкладку Призывателя
+
 						Main.NewText("Характеристика улучшена!");
 					}
 					else
@@ -569,11 +585,20 @@ namespace LevelRogue.UI
 			return panel;
 		}
 
-		private void RefreshSummonerStatDisplay(UIText[] statTexts, LevelPlayer mp)
+		private static UIText SummonDamageText;
+		private static UIText SummonSpeedText;
+
+		public static void RefreshSummonerStatDisplay()
 		{
-			statTexts[0].SetText($"Урон призывателя: {mp.spentSummonDamage}");
-			statTexts[1].SetText($"Скорость хлыстов: {mp.spentSummonSpeed}");
+			Player p = Main.LocalPlayer;
+			LevelPlayer mp = p.GetModPlayer<LevelPlayer>();
+
+			if (SummonDamageText != null)
+				SummonDamageText.SetText($"Урон Призывателя: {mp.spentSummonDamage}");
+			if (SummonSpeedText != null)
+				SummonSpeedText.SetText($"Скорость хлыстов: {mp.spentSummonSpeed}");
 		}
+		
 	}
 		
 }
