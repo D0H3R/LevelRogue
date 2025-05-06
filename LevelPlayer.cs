@@ -16,7 +16,7 @@ namespace LevelRogue
 		private int savedItemTime;
 
         // 🔥 Статистика игрока
-        public int level = 1;
+        public int level = 0;
         public int experience = 0;
         public int statPoints = 0;
         public int bonusStatPoints = 0; // Дополнительные очки
@@ -39,7 +39,8 @@ namespace LevelRogue
 		
 		// Переменные для мага
 		public float magicDamageBonus = 0f; // Урон магии
-		public int bonusMagicCrit = 0; // Шанс критического удара магией	
+		public int bonusMagicCrit = 0; // Шанс критического удара магией
+		public float magicSpeedBonus = 0f;
 		
 		public int spentMagicDamage;
 		public int spentMagicCrit;
@@ -105,8 +106,8 @@ namespace LevelRogue
 			rangedDamageBonus = tag.GetInt("rangedDamageBonus");
 			bonusRangedCrit = tag.GetInt("bonusRangedCrit");
 			
-			summonDamageBonus = tag.GetInt("summonDamageBonus");
-			summonSpeedBonus = tag.GetInt("summonSpeedBonus");
+			summonDamageBonus = tag.GetFloat("summonDamageBonus");
+			summonSpeedBonus = tag.GetFloat("summonSpeedBonus");
 
 			bonusHP = tag.GetInt("bonusHP");
 			regenBonus = tag.GetInt("regenBonus");
@@ -171,7 +172,7 @@ namespace LevelRogue
 			Player.GetAttackSpeed(DamageClass.Ranged) += rangedSpeedBonus;
 			
 			// Применяем бонусы для мага
-			magicDamageBonus = spentMagicDamage * 0.01f;
+			float magicDamageBonus = spentMagicDamage * 0.01f;
 			int magicCritBonus = spentMagicCrit;
 			float magicSpeedBonus = spentMagicSpeed * 0.01f;
 
@@ -180,7 +181,7 @@ namespace LevelRogue
 			Player.GetAttackSpeed(DamageClass.Magic) += magicSpeedBonus;
 
 			// Применяем бонусы для призывателя
-			summonDamageBonus = spentSummonDamage * 0.01f;
+			float summonDamageBonus = spentSummonDamage * 0.01f;
 			float summonSpeedBonus = spentSummonSpeed * 0.01f;
 
 			Player.GetDamage(DamageClass.Summon) += summonDamageBonus;
